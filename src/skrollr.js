@@ -225,8 +225,8 @@
 	 * Constructor.
 	 */
 	function Skrollr(options) {
-		documentElement = document.documentElement;
-		body = document.body;
+		documentElement = (options.documentElement) ? document.getElementById(options.documentElement) : document.documentElement;
+		body = (options.documentBody) ? document.getElementById(options.documentBody) : document.body;
 
 		detectCSSPrefix();
 
