@@ -1,14 +1,7 @@
-[![Build Status](https://secure.travis-ci.org/Prinzhorn/skrollr.png)](http://travis-ci.org/Prinzhorn/skrollr)
-
-Please note:
-============
-
-**skrollr hasn't been under active development since about September 2014** (check out the contributions graphs on https://github.com/Prinzhorn/skrollr/graphs/contributors) and I don't have any plans for doing major changes to it. Please consider this before using skrollr in production as problems with new browser versions, especially on mobile, will most definitely surface. To be honest, mobile support always sucked (because mobile browsers are hard) and you shouldn't compromise UX for some fancy UI effects. Ever.
-
-skrollr 0.6.30
+skrollr 0.6.31
 ==============
 
-Stand-alone **parallax scrolling** JavaScript library for **mobile (Android, iOS, etc.) and desktop** in about 12k minified.
+Stand-alone **parallax scrolling** JavaScript library in about 12k minified.
 
 Designer friendly. No JavaScript skills needed. Just plain CSS and HTML.
 
@@ -31,21 +24,16 @@ Plugins
 * [skrollr-colors](https://github.com/FezVrasta/skrollr-colors) - Mix and match hex, rgb and hsl colors.
 * [skrollr-decks](https://github.com/TrySound/skrollr-decks) - Fullpage presentation decks.
 
-In the wild
------
-
-Check out the [wiki page](https://github.com/Prinzhorn/skrollr/wiki/In-the-wild) for websites using skrollr and feel free to add your own website :). You can also shamelessly add yourself to the list [here](https://github.com/Prinzhorn/skrollr/wiki/Agencies-and-freelancers) if you are offering paid skrollr support.
-
 Further resources (tutorials etc.)
 -----
 
-Moved to the [wiki](https://github.com/Prinzhorn/skrollr/wiki/Resources).
+Moved to the [wiki](https://github.com/tete-chercheuse/skrollr/wiki/Resources).
 
 
 Documentation
 =====
 
-First of all: look at the [examples and read the source ;-)](https://github.com/Prinzhorn/skrollr/tree/master/examples). This might give you a feeling of how stuff works and you can see how some patterns can be implemented.
+First of all: look at the [examples and read the source ;-)](https://github.com/tete-chercheuse/skrollr/tree/master/examples). This might give you a feeling of how stuff works and you can see how some patterns can be implemented.
 
 Abstract
 ------
@@ -136,26 +124,6 @@ Now you may have noticed that using `500` as a keyframe position is kind of rand
 That's the end of this short intro. The following sections will explain some more things in detail.
 
 If you're not a fan of `data-attributes` or if you're planning a big website where you want a better and more flexible structure, take a look at [skrollr-stylesheets](https://github.com/Prinzhorn/skrollr-stylesheets).
-
-Mobile support
------
-Starting with version 0.5.0 skrollr officially supports mobile browsers including Android and iOS. Furthermore, mobile support has been rewritten from scratch for skrollr 0.6.0.
-
-### The Problem with mobile and the solution
-
-(If you're not interested in the details, just scroll down a bit to see what you need to do for mobile support.)
-
-Some words on why this is an important milestone and why others failed: Mobile browsers try to save battery wherever they can. That's why mobile browsers delay the execution of JavaScript while you are scrolling. iOS in particular does this very aggressively and completely stops JavaScript. In short, that's the reason why many scrolling libraries either don't work on mobile devices or they come with their own scrollbar which is a usability nightmare on desktop. It was an important requirement while I developed skrollr that I don't force you to scroll the way I want it. skrollr on desktop uses a native scrollbar and you can scroll the way you want to (keyboard, mouse, etc.).
-
-You just told me it doesn't work on mobile, but why does it? The answer is simple. When using skrollr on mobile you don't actually scroll. When detecting a mobile browser, skrollr disables native scrolling and instead listens for touch events and moves the content (more specific the `#skrollr-body` element) using CSS transforms.
-
-### What you need in order to support mobile browsers
-
-Starting with skrollr 0.6.0 there's just one thing you need to do: Include an element on your page with the id `skrollr-body`. That's the element we move in order to fake scrolling. The only case where you don't need a `#skrollr-body` is when using `position:fixed` exclusively. In fact, the skrollr website doesn't include a `#skrollr-body` element. If you need both fixed and non-fixed (i.e. static) elements, put the static ones inside the `#skrollr-body` element.
-
-Or to put it differently: On mobile the `skrollr-body` element is moved using CSS transforms. You can't have `position:fixed` or `background-attachment:fixed` inside elements which use CSS transforms as per CSS spec (http://meyerweb.com/eric/thoughts/2011/09/12/un-fixing-fixed-elements-with-css-transforms/). That's why those elements need to be **outside** of the `skrollr-body` element.
-
-The `skrollr-body` element might be configured within the [init-options](#skrollrinitoptions).
 
 AMD
 ---
@@ -373,33 +341,16 @@ When `forceHeight` is set to false, `scale` is ignored.
 
 `scale` does only affect key frames in absolute mode, e.g. `data-500` but not `data-top`.
 
-###forceHeight=true
+### fpsLimit=60
+
+Limits the FPS of RequestAnimationFrame to avoid lag.
+
+
+### forceHeight=false
 
 `true`: Make sure the document is high enough that all key frames fit inside. Example: You use `data-1000`, but the content only makes the document 500px high. skrollr will ensure that you can scroll down the whole 1000px. Or if you use relative mode, e.g. `data-top-bottom`, skrollr will make sure the bottom of the element can actually reach the top of the viewport.
 
 `false`: Don't manipulate the document and just keep the natural scrollbar.
-
-###mobileCheck=function() {...}
-
-This option allows you to pass a function to skrollr overwriting the check for mobile devices. The function should return `true` when mobile scrolling should be used and `false` if not.
-
-The default looks like this
-
-```js
-function() {
-	return (/Android|iPhone|iPad|iPod|BlackBerry/i).test(navigator.userAgent || navigator.vendor || window.opera);
-}
-```
-
-### mobileDeceleration=0.004
-
-The amount of deceleration for momentum scrolling on mobile devices. This options tells skrollr how fast or slow you want the scrolling to stop after the user lifted his finger.
-
-Set it to `1` to disable momentum scrolling.
-
-### skrollrBody='skrollr-body'
-
-This option allows you to override the default id-selector used for supporting mobile browsers. It might come in handy when the element in question already has a assigned id or if you would like to define more then one skrollrBody depending on preceding JavaScript-logic.
 
 ### edgeStrategy='set'
 
@@ -652,4 +603,4 @@ Destroys skrollr. All `class` and `style` attributes will be set to the values t
 Changelog
 =====
 
-See [HISTORY.md](https://github.com/Prinzhorn/skrollr/blob/master/HISTORY.md).
+See [HISTORY.md](https://github.com/tete-chercheuse/skrollr/blob/master/HISTORY.md).
