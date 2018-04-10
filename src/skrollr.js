@@ -19,7 +19,7 @@
         init: function(options) {
             return _instance || new Skrollr(options);
         },
-        VERSION: '0.6.31'
+        VERSION: '1.0.0'
     };
 
     //Minify optimization.
@@ -247,13 +247,13 @@
         };
 
         //forceHeight is false by default
-        _forceHeight = options.forceHeight !== true;
+        _forceHeight = (options.forceHeight);
 
         if (_forceHeight) {
             _scale = options.scale || 1;
         }
 
-        _smoothScrollingEnabled = options.smoothScrolling !== true;
+        _smoothScrollingEnabled = (options.smoothScrolling);
         _smoothScrollingDuration = options.smoothScrollingDuration || DEFAULT_SMOOTH_SCROLLING_DURATION;
 
         //Dummy object. Will be overwritten in the _render method when smooth scrolling is calculated.

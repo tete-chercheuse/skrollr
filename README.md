@@ -1,4 +1,4 @@
-skrollr 0.6.31
+Skrollr
 ==============
 
 Stand-alone **parallax scrolling** JavaScript library in about 12k minified.

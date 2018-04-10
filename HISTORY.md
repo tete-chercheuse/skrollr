@@ -1,3 +1,11 @@
+1.0.0 (2018-04-10)
+-------------------
+
+* Add option to init Skrollr in container instead of body
+* Add option to limit FPS of RequestAnimationFrame
+* Remove Mobile Support
+* Various tweaks
+
 0.6.30 (2015-06-19)
 -------------------
 
