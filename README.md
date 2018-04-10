@@ -1,9 +1,7 @@
-[![Build Status](https://secure.travis-ci.org/Prinzhorn/skrollr.png)](http://travis-ci.org/Prinzhorn/skrollr)
+Skrollr
+==============
 
-skrollr 0.6.26
-=====
-
-Stand-alone **parallax scrolling** JavaScript library for **mobile (Android, iOS, etc.) and desktop** in about 12k minified.
+Stand-alone **parallax scrolling** JavaScript library in about 12k minified.
 
 Designer friendly. No JavaScript skills needed. Just plain CSS and HTML.
 
@@ -24,22 +22,18 @@ Plugins
 ### Third party
 
 * [skrollr-colors](https://github.com/FezVrasta/skrollr-colors) - Mix and match hex, rgb and hsl colors.
-
-In the wild
------
-
-Check out the [wiki page](https://github.com/Prinzhorn/skrollr/wiki/In-the-wild) for websites using skrollr and feel free to add your own website :). You can also shamelessly add yourself to the list [here](https://github.com/Prinzhorn/skrollr/wiki/Agencies-and-freelancers) if you are offering paid skrollr support.
+* [skrollr-decks](https://github.com/TrySound/skrollr-decks) - Fullpage presentation decks.
 
 Further resources (tutorials etc.)
 -----
 
-Moved to the [wiki](https://github.com/Prinzhorn/skrollr/wiki/Resources).
+Moved to the [wiki](https://github.com/tete-chercheuse/skrollr/wiki/Resources).
 
 
 Documentation
 =====
 
-First of all: look at the [examples and read the source ;-)](https://github.com/Prinzhorn/skrollr/tree/master/examples). This might give you a feeling of how stuff works and you can see how some patterns can be implemented.
+First of all: look at the [examples and read the source ;-)](https://github.com/tete-chercheuse/skrollr/tree/master/examples). This might give you a feeling of how stuff works and you can see how some patterns can be implemented.
 
 Abstract
 ------
@@ -54,6 +48,8 @@ Other libraries require you to write JavaScript in order to define your animatio
 With skrollr, you put the definition of your key frames right where they belong (to the element) using a syntax you already know (plain CSS).
 
 If you would rather have the keyframes inside a separate file, take a look at [skrollr-stylesheets](https://github.com/Prinzhorn/skrollr-stylesheets).
+
+If you prefer to use JavaScript to define your animations make sure to take a look at [ScrollMagic](https://github.com/janpaepke/ScrollMagic). It depends on both jQuery and the Greensock Animation Platform (GSAP) and gives you full control over every detail of your animations.
 
 Let's get serious
 ------
@@ -129,24 +125,6 @@ That's the end of this short intro. The following sections will explain some mor
 
 If you're not a fan of `data-attributes` or if you're planning a big website where you want a better and more flexible structure, take a look at [skrollr-stylesheets](https://github.com/Prinzhorn/skrollr-stylesheets).
 
-Mobile support
------
-Starting with version 0.5.0 skrollr officially supports mobile browsers including Android and iOS. Furthermore, mobile support has been rewritten from scratch for skrollr 0.6.0.
-
-### The Problem with mobile and the solution
-
-(If you're not interested in the details, just scroll down a bit to see what you need to do for mobile support.)
-
-Some words on why this is an important milestone and why others failed: Mobile browsers try to save battery wherever they can. That's why mobile browsers delay the execution of JavaScript while you are scrolling. iOS in particular does this very aggressively and completely stops JavaScript. In short, that's the reason why many scrolling libraries either don't work on mobile devices or they come with their own scrollbar which is a usability nightmare on desktop. It was an important requirement while I developed skrollr that I don't force you to scroll the way I want it. skrollr on desktop uses a native scrollbar and you can scroll the way you want to (keyboard, mouse, etc.).
-
-You just told me it doesn't work on mobile, but why does it? The answer is simple. When using skrollr on mobile you don't actually scroll. When detecting a mobile browser, skrollr disables native scrolling and instead listens for touch events and moves the content (more specific the `#skrollr-body` element) using CSS transforms.
-
-### What you need in order to support mobile browsers
-
-Starting with skrollr 0.6.0 there's just one thing you need to do: Include an element on your page with the id `skrollr-body`. That's the element we move in order to fake scrolling. The only case where you don't need a `#skrollr-body` is when using `position:fixed` exclusively. In fact, the skrollr website doesn't include a `#skrollr-body` element. If you need both fixed and non-fixed (i.e. static) elements, put the static ones inside the `#skrollr-body` element.
-
-Or to put it differently: On mobile the `skrollr-body` element is moved using CSS transforms. You can't have `position:fixed` or `background-attachment:fixed` inside elements which use CSS transforms as per CSS spec (http://meyerweb.com/eric/thoughts/2011/09/12/un-fixing-fixed-elements-with-css-transforms/). That's why those elements need to be **outside** of the `skrollr-body` element.
-
 AMD
 ---
 
@@ -189,9 +167,9 @@ The syntax is `data-[offset]-(viewport-anchor)-[element-anchor]`, where `offset`
 * `data-center-center` = `data-0-center-center`: When the element is at the center of the viewport.
 * `data-bottom-center` = `data-0-bottom-center`: When the element's center is at the bottom of the viewport, thus the upper half of the element is visible.
 
-By default the element is the element where the key frames are defined on (self), but can be any element on the page. You can optionally specify which element you want by using the `data-anchor-target` and any CSS selector. The first element on the page matching the selector will be used. `data-anchor-target` requires IE 8 or greater.
+By default the keyframes are triggered by the position of the element where the keyframes are described.  However there are times when the position of a second element should trigger the first element's keyframes.  The  `data-anchor-target` attribute can be used in these cases.  The `data-anchor-target` attribute accepts any CSS selector and the position of the first element on the page matching the selector will be used to trigger keyframes on the element where the attribute is defined. `data-anchor-target` requires IE 8 or greater.
 
-Examples: `data-anchor-target="#foo"` or `data-anchor-target=".bar:not(.bacon) ~ span > a[href]"`
+Examples: `<div `data-anchor-target="#foo"`>`  will have it's keyframes tiggered by  the position of the `#foo element`.  Any CSS selector can be used, i.e  `data-anchor-target=".bar:not(.bacon) ~ span > a[href]"`
 
 **Note**: If you need to support IE 7, then you may only use IDs as `anchor-target`s, i.e. `#foo`. The IE plugin maps `querySelector` to `getElementById`.
 
@@ -216,7 +194,7 @@ Check out the [skrollr-menu](https://github.com/Prinzhorn/skrollr-menu) plugin.
 Working with constants
 -----
 
-I was lying to you. The syntax for absolute mode is not `data-[offset]-[anchor]` and for relative mode it's not `data-[offset]-(viewport-anchor)-[element-anchor]`. In both cases, `offset` can be preceded by a constant which can be passed to the `ìnit` method. The name of the constant needs to be preceded with an underscore.
+I was lying to you. The syntax for absolute mode is not `data-[offset]-[anchor]` and for relative mode it's not `data-[offset]-(viewport-anchor)-[element-anchor]`. In both cases, `offset` can be preceded by a constant which can be passed to the `init` method. The name of the constant needs to be preceded with an underscore.
 
 Example:
 
@@ -363,29 +341,16 @@ When `forceHeight` is set to false, `scale` is ignored.
 
 `scale` does only affect key frames in absolute mode, e.g. `data-500` but not `data-top`.
 
-###forceHeight=true
+### fpsLimit=60
+
+Limits the FPS of RequestAnimationFrame to avoid lag.
+
+
+### forceHeight=false
 
 `true`: Make sure the document is high enough that all key frames fit inside. Example: You use `data-1000`, but the content only makes the document 500px high. skrollr will ensure that you can scroll down the whole 1000px. Or if you use relative mode, e.g. `data-top-bottom`, skrollr will make sure the bottom of the element can actually reach the top of the viewport.
 
 `false`: Don't manipulate the document and just keep the natural scrollbar.
-
-###mobileCheck=function() {...}
-
-This option allows you to pass a function to skrollr overwriting the check for mobile devices. The function should return `true` when mobile scrolling should be used and `false` if not.
-
-The default looks like this
-
-```js
-function() {
-	return (/Android|iPhone|iPad|iPod|BlackBerry/i).test(navigator.userAgent || navigator.vendor || window.opera);
-}
-```
-
-### mobileDeceleration=0.004
-
-The amount of deceleration for momentum scrolling on mobile devices. This options tells skrollr how fast or slow you want the scrolling to stop after the user lifted his finger.
-
-Set it to `1` to disable momentum scrolling.
 
 ### edgeStrategy='set'
 
@@ -422,7 +387,7 @@ and imagine the scrollbar is at `237`, which is below the first keyframe which i
 
 ### beforerender
 
-A listener function that gets called each time right before we render everything. The function will be passed as an object with the following properties:
+A listener function that gets called each time right before we render everything. The function will be passed an object with the following properties:
 
 ```js
 {
@@ -525,6 +490,20 @@ skrollr ships with some built in functions:
 * outCubic
 * bounce: Bounces like a ball. See https://www.desmos.com/calculator/tbr20s8vd2 for a graphical representation.
 
+**Custom easing**
+
+* Use [this](http://www.timotheegroleau.com/Flash/experiments/easing_function_generator.htm) generator
+* Insert the given polynomial coeficients instead of t, t2, t3, t4 and t5
+```
+t5*(p*p*p*p*p) + t4*(p*p*p*p) + t3*(p*p*p) + t2*(p*p) + t*p
+```
+Example shown with the values for easeOutElasticBig
+```
+easeOutElasticBig: function(p) {
+  return 56*(p*p*p*p*p) - 175*(p*p*p*p) + 200*(p*p*p) - 100*(p*p) + 20*p;
+}
+```
+
 skrollr.get()
 -----
 
@@ -624,4 +603,4 @@ Destroys skrollr. All `class` and `style` attributes will be set to the values t
 Changelog
 =====
 
-See [HISTORY.md](https://github.com/Prinzhorn/skrollr/blob/master/HISTORY.md).
+See [HISTORY.md](https://github.com/tete-chercheuse/skrollr/blob/master/HISTORY.md).

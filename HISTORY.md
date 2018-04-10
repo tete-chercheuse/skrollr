@@ -1,3 +1,32 @@
+1.0.0 (2018-04-10)
+-------------------
+
+* Add option to init Skrollr in container instead of body
+* Add option to limit FPS of RequestAnimationFrame
+* Remove Mobile Support
+* Various tweaks
+
+0.6.30 (2015-06-19)
+-------------------
+
+* Respect result of beforerender callback on mobile (#717)
+* Allow for a duration of 0 when scrolling (#720)
+
+0.6.29 (2014-11-17)
+-------------------
+
+* Make the ID of `skrollr-body` configurable (#592)
+
+0.6.28 (2014-11-15)
+-------------------
+
+* In cases where skrollr-body has a height other than `auto` the height of its content is now correctly calculated. This should solve many issues on mobile where scrolling got stock before reaching the bottom (#633)
+
+0.6.27 (2014-09-28)
+-------------------
+
+* Fixed AMD module definition (#609)
+
 0.6.26 (2014-06-08)
 -------------------
 
