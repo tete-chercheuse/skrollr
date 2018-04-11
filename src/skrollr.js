@@ -282,7 +282,7 @@
         var requestAnimFrame = polyfillRAF();
 
         //Let's go.
-        (function skrollrLoop(currentDelta) {
+        (function skrollrLoop() {
 
             _animFrame = requestAnimFrame(skrollrLoop);
 
@@ -650,7 +650,6 @@
         _forceRender = undefined;
         _skrollableIdCounter = 0;
         _edgeStrategy = undefined;
-        _previousDelta = 0;
     };
 
     /*
