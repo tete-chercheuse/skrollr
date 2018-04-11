@@ -19,7 +19,7 @@
         init: function(options) {
             return _instance || new Skrollr(options);
         },
-        VERSION: '1.0.0'
+        VERSION: '1.0.1'
     };
 
     //Minify optimization.
@@ -42,7 +42,6 @@
 
     var DEFAULT_EASING = 'linear';
     var DEFAULT_DURATION = 1000; //ms
-    var DEFAULT_FPS_LIMIT = 60;
 
     var DEFAULT_SMOOTH_SCROLLING_DURATION = 200; //ms
 
@@ -215,14 +214,15 @@
      * Constructor.
      */
     function Skrollr(options) {
+
+        options = options || {};
+
         documentElement = (options.documentElement) ? document.getElementById(options.documentElement) : document.documentElement;
         body = (options.documentBody) ? document.getElementById(options.documentBody) : document.body;
 
         detectCSSPrefix();
 
         _instance = this;
-
-        options = options || {};
 
         _constants = options.constants || {};
 
@@ -279,8 +279,6 @@
             }
         });
 
-        _fpsLimit = options.fpsLimit || DEFAULT_FPS_LIMIT;
-
         var requestAnimFrame = polyfillRAF();
 
         //Let's go.
@@ -288,15 +286,12 @@
 
             _animFrame = requestAnimFrame(skrollrLoop);
 
-            var delta = currentDelta - _previousDelta;
-
-            if ((_fpsLimit && delta < 1000 / _fpsLimit) || (_lastPosition === window.pageYOffset)) { // Avoid overcalculations
+            if (_lastPosition === window.pageYOffset) { // Avoid overcalculations
                 return false;
             }
 
             _render();
             _lastPosition = window.pageYOffset;
-            _previousDelta = currentDelta;
 
         }());
 
@@ -644,6 +639,7 @@
         _constants = undefined;
         _direction = 'down';
         _lastTop = -1;
+        _lastPosition = -1;
         _lastViewportWidth = 0;
         _lastViewportHeight = 0;
         _requestReflow = false;
@@ -655,8 +651,6 @@
         _skrollableIdCounter = 0;
         _edgeStrategy = undefined;
         _previousDelta = 0;
-        _lastPosition = -1;
-        _fpsLimit = undefined;
     };
 
     /*
@@ -1528,6 +1522,7 @@
 
     //The last top offset value. Needed to determine direction.
     var _lastTop = -1;
+    var _lastPosition = -1;
 
     //The last time we called the render method (doesn't mean we rendered!).
     var _lastRenderCall = _now();
@@ -1562,11 +1557,6 @@
 
     //Animation frame id returned by RequestAnimationFrame (or timeout when RAF is not supported).
     var _animFrame;
-
-    var _previousDelta = 0;
-    var _lastPosition = -1;
-
-    var _fpsLimit;
 
     //Expose skrollr as either a global variable or a require.js module.
     if (typeof define === 'function' && define.amd) {
