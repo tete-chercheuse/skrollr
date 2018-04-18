@@ -1,3 +1,8 @@
+1.1.0 (2018-04-18)
+-------------------
+
+* Change SmoothScroll using [smooth-scrolling](https://github.com/baptistebriel/smooth-scrolling)
+
 1.0.2 (2018-04-13)
 -------------------
 

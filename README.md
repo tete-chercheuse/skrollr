@@ -313,15 +313,21 @@ All there is to do is to call `skrollr.init([options]);` which returns an instan
 
 Possible options for `init()` are
 
-### smoothScrolling=true
+### smoothScroll=true
 
 Smooth scrolling smoothens your animations. When you scroll down 50 pixels, the animations will transition instead of jumping to the new position.
 
-The global setting can be overridden per element by setting `data-smooth-scrolling` to `on` or `off`.
+### speed=0.2
 
-### smoothScrollingDuration=200
+The Smooth Scrolling speed.
 
-The number of milliseconds the animations run after the scroll position changed the last time.
+### documentElement=document.documentElement
+
+The document element
+
+### documentBody=document.body
+
+The actual scrolling element (Required when using smoothScroll)
 
 ### constants={}
 
@@ -340,10 +346,6 @@ When `forceHeight` is set to false, `scale` is ignored.
 `scale` affects `constants` as well.
 
 `scale` does only affect key frames in absolute mode, e.g. `data-500` but not `data-top`.
-
-### fpsLimit=60
-
-Limits the FPS of RequestAnimationFrame to avoid lag.
 
 
 ### forceHeight=false

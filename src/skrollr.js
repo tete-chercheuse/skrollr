@@ -8,6 +8,8 @@
 (function(window, document, undefined) {
 	'use strict';
 
+	var Smooth = require('smooth-scrolling');
+
 	/*
      * Global api.
      */
@@ -19,7 +21,7 @@
 		init:    function(options) {
 			return _instance || new Skrollr(options);
 		},
-		VERSION: '1.0.2'
+		VERSION: '1.1.0'
 	};
 
 	//Minify optimization.
@@ -37,12 +39,13 @@
 	var SKROLLABLE_AFTER_CLASS = SKROLLABLE_CLASS + '-after';
 
 	var SKROLLR_CLASS = 'skrollr';
+	var SKROLLR_BODY_CLASS = 'vs-body';
 	var NO_SKROLLR_CLASS = 'no-' + SKROLLR_CLASS;
 
 	var DEFAULT_EASING = 'linear';
 	var DEFAULT_DURATION = 1000; //ms
 
-	var DEFAULT_SMOOTH_SCROLLING_DURATION = 200; //ms
+	var DEFAULT_SMOOTH_SCROLLING_SPEED = 0.2;
 
 	var ANCHOR_START = 'start';
 	var ANCHOR_END = 'end';
@@ -221,8 +224,8 @@
 
 		options = options || {};
 
-		documentElement = (options.documentElement) ? document.getElementById(options.documentElement) : document.documentElement;
-		documentBody = (options.documentBody) ? document.getElementById(options.documentBody) : document.body;
+		documentElement = (options.documentElement) ? document.querySelector(options.documentElement) : document.documentElement;
+		documentBody = (options.documentBody) ? document.querySelector(options.documentBody) : (options.documentElement) ? documentElement : document.body;
 
 		detectCSSPrefix();
 
@@ -257,14 +260,6 @@
 			_scale = options.scale || 1;
 		}
 
-		_smoothScrollingEnabled = (options.smoothScrolling);
-		_smoothScrollingDuration = options.smoothScrollingDuration || DEFAULT_SMOOTH_SCROLLING_DURATION;
-
-		//Dummy object. Will be overwritten in the _render method when smooth scrolling is calculated.
-		_smoothScrolling = {
-			targetTop: _instance.getScrollTop()
-		};
-
 		_updateClass(documentElement, [SKROLLR_CLASS], [NO_SKROLLR_CLASS]);
 
 		//Triggers parsing of elements and a first reflow.
@@ -283,23 +278,59 @@
 			}
 		});
 
-		var requestAnimFrame = polyfillRAF();
+		_smoothScrollingEnabled = (options.smoothScroll);
 
-		//Let's go.
-		(function skrollrLoop() {
+		if(_smoothScrollingEnabled) {
 
-			_animFrame = requestAnimFrame(skrollrLoop);
+			_updateClass(documentBody, [SKROLLR_BODY_CLASS], []);
 
-			var currentTop = _instance.getScrollTop();
+			_smoothScrollingDuration = (options.speed) ? Math.max(0, Math.min(1, options.speed)) : DEFAULT_SMOOTH_SCROLLING_SPEED;
 
-			if(_lastPosition === currentTop) { // Avoid overcalculations
-				return false;
-			}
+			_smoothScrolling = new Smooth.default({
+				native:   true,
+				section:  documentBody,
+				ease:     _smoothScrollingDuration,
+				vs:       {
+					keyStep:      240,
+					limitInertia: true,
+					passive:      true,
+				},
+				preload:  false,
+				callback: function(currentTop) {
+
+					if(_lastPosition === currentTop) { // Avoid overcalculations
+						return false;
+					}
+
+					_lastPosition = currentTop;
+					_render();
+				}
+			});
+
+			_smoothScrolling.init();
 
 			_render();
-			_lastPosition = currentTop;
+		}
+		else {
 
-		}());
+			var requestAnimFrame = polyfillRAF();
+
+			//Let's go.
+			(function skrollrLoop() {
+
+				_animFrame = requestAnimFrame(skrollrLoop);
+
+				var currentTop = _instance.getScrollTop();
+
+				if(_lastPosition === currentTop) { // Avoid overcalculations
+					return false;
+				}
+
+				_render();
+				_lastPosition = currentTop;
+
+			}());
+		}
 
 		return _instance;
 	}
@@ -335,9 +366,6 @@
 			var anchorTarget = el;
 			var keyFrames = [];
 
-			//If this particular element should be smooth scrolled.
-			var smoothScrollThis = _smoothScrollingEnabled;
-
 			//The edge strategy for this particular element.
 			var edgeStrategy = _edgeStrategy;
 
@@ -366,13 +394,6 @@
 					if(anchorTarget === null) {
 						throw 'Unable to find anchor target "' + attr.value + '"';
 					}
-
-					continue;
-				}
-
-				//Global smooth scrolling can be overridden by the element attribute.
-				if(attr.name === 'data-smooth-scrolling') {
-					smoothScrollThis = attr.value !== 'off';
 
 					continue;
 				}
@@ -477,15 +498,14 @@
 			}
 
 			_skrollables[id] = {
-				element:         el,
-				styleAttr:       styleAttr,
-				classAttr:       classAttr,
-				anchorTarget:    anchorTarget,
-				keyFrames:       keyFrames,
-				smoothScrolling: smoothScrollThis,
-				edgeStrategy:    edgeStrategy,
-				emitEvents:      emitEvents,
-				lastFrameIndex:  -1
+				element:        el,
+				styleAttr:      styleAttr,
+				classAttr:      classAttr,
+				anchorTarget:   anchorTarget,
+				keyFrames:      keyFrames,
+				edgeStrategy:   edgeStrategy,
+				emitEvents:     emitEvents,
+				lastFrameIndex: -1
 			};
 
 			_updateClass(el, [SKROLLABLE_CLASS], []);
@@ -607,7 +627,7 @@
 	};
 
 	Skrollr.prototype.getScrollTop = function() {
-		return window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop || 0;
+		return (_smoothScrollingEnabled) ? _smoothScrolling.vars.current || 0 : window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop || 0;
 	};
 
 	Skrollr.prototype.getMaxScrollTop = function() {
@@ -642,6 +662,8 @@
 
 		documentElement.style.overflow = documentBody.style.overflow = '';
 		documentElement.style.height = documentBody.style.height = '';
+
+		_smoothScrolling.destroy();
 
 		_instance = undefined;
 		_listeners = undefined;
@@ -778,7 +800,7 @@
 		for(; skrollableIndex < skrollablesLength; skrollableIndex++) {
 			var skrollable = _skrollables[skrollableIndex];
 			var element = skrollable.element;
-			var frame = skrollable.smoothScrolling ? fakeFrame : actualFrame;
+			var frame = actualFrame;
 			var frames = skrollable.keyFrames;
 			var framesLength = frames.length;
 			var firstFrame = frames[0];
@@ -945,29 +967,6 @@
 			}
 
 			_instance.setScrollTop(renderTop, true);
-		}
-		//Smooth scrolling only if there's no animation running and if we're not forcing the rendering.
-		else if(!_forceRender) {
-			var smoothScrollingDiff = _smoothScrolling.targetTop - renderTop;
-
-			//The user scrolled, start new smooth scrolling.
-			if(smoothScrollingDiff) {
-				_smoothScrolling = {
-					startTop:  _lastTop,
-					topDiff:   renderTop - _lastTop,
-					targetTop: renderTop,
-					startTime: _lastRenderCall,
-					endTime:   _lastRenderCall + _smoothScrollingDuration
-				};
-			}
-
-			//Interpolate the internal scroll position (not the actual scrollbar).
-			if(now <= _smoothScrolling.endTime) {
-				//Map the current progress to the new progress using easing function.
-				progress = easings.sqrt((now - _smoothScrolling.startTime) / _smoothScrollingDuration);
-
-				renderTop = (_smoothScrolling.startTop + progress * _smoothScrolling.topDiff) | 0;
-			}
 		}
 
 		//Did the scroll position even change?
@@ -1566,6 +1565,7 @@
 	var _smoothScrollingDuration;
 
 	//Will contain settins for smooth scrolling if enabled.
+	//var _smoothScrolling;
 	var _smoothScrolling;
 
 	//Can be set by any operation/event to force rendering even if the scrollbar didn't move.
@@ -1592,8 +1592,7 @@
 	else if(typeof module !== 'undefined' && module.exports) {
 		module.exports = skrollr;
 	}
-	else {
-		window.skrollr = skrollr;
-	}
+
+	window.skrollr = skrollr;
 
 }(window, document));

@@ -1,29 +1,32 @@
 {
-    "name": "skrollr",
-    "version": "1.0.2",
-    "description": "Stand-alone parallax scrolling library with zero dependencies.",
-    "homepage": "https://github.com/tete-chercheuse/skrollr",
-    "authors": [
-        "Steliann <steliann@tete-chercheuse.fr>"
-    ],
-    "main": "src/skrollr.js",
-    "moduleType": [
-        "globals"
-    ],
-    "keywords": [
-        "parallax",
-        "scroll",
-        "animation",
-        "html5",
-        "css3",
-        "transition"
-    ],
-    "license": "MIT",
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "tests"
-    ]
+  "name": "skrollr",
+  "version": "1.1.0",
+  "description": "Stand-alone parallax scrolling library with zero dependencies.",
+  "homepage": "https://github.com/tete-chercheuse/skrollr",
+  "authors": [
+    "Steliann <steliann@tete-chercheuse.fr>"
+  ],
+  "main": [
+    "dist/skrollr.css",
+    "dist/skrollr.js"
+  ],
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "parallax",
+    "scroll",
+    "animation",
+    "html5",
+    "css3",
+    "transition"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
 }
