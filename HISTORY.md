@@ -1,3 +1,8 @@
+1.1.1 (2018-04-19)
+-------------------
+
+* Add 'done' class handle for elements that needs to be animated only once
+
 1.1.0 (2018-04-18)
 -------------------
 

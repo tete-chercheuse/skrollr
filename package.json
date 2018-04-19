@@ -1,7 +1,7 @@
 {
   "name": "skrollr",
-  "version": "1.1.0",
-  "description": "Stand-alone parallax scrolling library with zero dependencies.",
+  "version": "1.1.1",
+  "description": "Stand-alone parallax scrolling library.",
   "homepage": "https://github.com/tete-chercheuse/skrollr",
   "author": {
     "name": "Tête Chercheuse",

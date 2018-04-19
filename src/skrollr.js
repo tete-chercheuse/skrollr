@@ -21,7 +21,7 @@
 		init:    function(options) {
 			return _instance || new Skrollr(options);
 		},
-		VERSION: '1.1.0'
+		VERSION: '1.1.1'
 	};
 
 	//Minify optimization.
@@ -37,9 +37,10 @@
 	var SKROLLABLE_BEFORE_CLASS = SKROLLABLE_CLASS + '-before';
 	var SKROLLABLE_BETWEEN_CLASS = SKROLLABLE_CLASS + '-between';
 	var SKROLLABLE_AFTER_CLASS = SKROLLABLE_CLASS + '-after';
+	var SKROLLABLE_DONE_CLASS = 'done';
 
 	var SKROLLR_CLASS = 'skrollr';
-	var SKROLLR_BODY_CLASS = 'vs-body';
+	var SKROLLR_BODY_CLASS = SKROLLR_CLASS + '-body';
 	var NO_SKROLLR_CLASS = 'no-' + SKROLLR_CLASS;
 
 	var DEFAULT_EASING = 'linear';
@@ -290,11 +291,6 @@
 				native:   true,
 				section:  documentBody,
 				ease:     _smoothScrollingDuration,
-				vs:       {
-					keyStep:      240,
-					limitInertia: true,
-					passive:      true,
-				},
 				preload:  false,
 				callback: function(currentTop) {
 
@@ -663,7 +659,11 @@
 		documentElement.style.overflow = documentBody.style.overflow = '';
 		documentElement.style.height = documentBody.style.height = '';
 
-		_smoothScrolling.destroy();
+		if(_smoothScrollingEnabled) {
+			_smoothScrolling.destroy();
+			_updateClass(documentBody, [], [SKROLLR_BODY_CLASS]);
+			skrollr.setStyle(documentBody, 'transform', null);
+		}
 
 		_instance = undefined;
 		_listeners = undefined;
@@ -796,6 +796,7 @@
 		//Iterate over all skrollables.
 		var skrollableIndex = 0;
 		var skrollablesLength = _skrollables.length;
+		var doneSkrollables = [];
 
 		for(; skrollableIndex < skrollablesLength; skrollableIndex++) {
 			var skrollable = _skrollables[skrollableIndex];
@@ -863,6 +864,10 @@
 								//Set style or attribute.
 								if(key.indexOf('@') === 0) {
 									element.setAttribute(key.substr(1), value);
+
+									if(afterLast && value.indexOf(SKROLLABLE_DONE_CLASS) > -1) {
+										doneSkrollables.push(skrollableIndex);
+									}
 								}
 								else {
 									skrollr.setStyle(element, key, value);
@@ -930,6 +935,15 @@
 
 					break;
 				}
+			}
+		}
+
+		if(doneSkrollables.length > 0) {
+
+			for(var i = 0; i < doneSkrollables.length; i++) {
+				var doneIndex = doneSkrollables[i];
+				var skrollable = _skrollables[doneIndex].element;
+				_skrollables.splice(doneIndex, 1);
 			}
 		}
 	};
