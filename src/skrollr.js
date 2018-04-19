@@ -487,7 +487,8 @@
 				keyFrames:      keyFrames,
 				edgeStrategy:   edgeStrategy,
 				emitEvents:     emitEvents,
-				lastFrameIndex: -1
+				lastFrameIndex: -1,
+				done: false
 			};
 
 			_updateClass(el, [SKROLLABLE_CLASS], []);
@@ -781,78 +782,122 @@
 		//Iterate over all skrollables.
 		var skrollableIndex = 0;
 		var skrollablesLength = _skrollables.length;
-		var doneSkrollables = [];
 
 		for(; skrollableIndex < skrollablesLength; skrollableIndex++) {
+
 			var skrollable = _skrollables[skrollableIndex];
-			var element = skrollable.element;
-			var frame = actualFrame;
-			var frames = skrollable.keyFrames;
-			var framesLength = frames.length;
-			var firstFrame = frames[0];
-			var lastFrame = frames[frames.length - 1];
-			var beforeFirst = frame < firstFrame.frame;
-			var afterLast = frame > lastFrame.frame;
-			var firstOrLastFrame = beforeFirst ? firstFrame : lastFrame;
-			var emitEvents = skrollable.emitEvents;
-			var lastFrameIndex = skrollable.lastFrameIndex;
-			var key;
-			var value;
 
-			//If we are before/after the first/last frame, set the styles according to the given edge strategy.
-			if(beforeFirst || afterLast) {
-				//Check if we already handled this edge case last time.
-				//Note: using setScrollTop it's possible that we jumped from one edge to the other.
-				if(beforeFirst && skrollable.edge === -1 || afterLast && skrollable.edge === 1) {
-					continue;
-				}
+			if(!skrollable.done) {
 
-				//Add the skrollr-before or -after class.
-				if(beforeFirst) {
-					_updateClass(element, [SKROLLABLE_BEFORE_CLASS], [SKROLLABLE_AFTER_CLASS, SKROLLABLE_BETWEEN_CLASS]);
+				var element = skrollable.element;
+				var frame = actualFrame;
+				var frames = skrollable.keyFrames;
+				var framesLength = frames.length;
+				var firstFrame = frames[0];
+				var lastFrame = frames[frames.length - 1];
+				var beforeFirst = frame < firstFrame.frame;
+				var afterLast = frame > lastFrame.frame;
+				var firstOrLastFrame = beforeFirst ? firstFrame : lastFrame;
+				var emitEvents = skrollable.emitEvents;
+				var lastFrameIndex = skrollable.lastFrameIndex;
+				var key;
+				var value;
 
-					//This handles the special case where we exit the first keyframe.
-					if(emitEvents && lastFrameIndex > -1) {
-						_emitEvent(element, firstFrame.eventType, _direction);
-						skrollable.lastFrameIndex = -1;
+				//If we are before/after the first/last frame, set the styles according to the given edge strategy.
+				if(beforeFirst || afterLast) {
+					//Check if we already handled this edge case last time.
+					//Note: using setScrollTop it's possible that we jumped from one edge to the other.
+					if(beforeFirst && skrollable.edge === -1 || afterLast && skrollable.edge === 1) {
+						continue;
+					}
+
+					//Add the skrollr-before or -after class.
+					if(beforeFirst) {
+						_updateClass(element, [SKROLLABLE_BEFORE_CLASS], [SKROLLABLE_AFTER_CLASS, SKROLLABLE_BETWEEN_CLASS]);
+
+						//This handles the special case where we exit the first keyframe.
+						if(emitEvents && lastFrameIndex > -1) {
+							_emitEvent(element, firstFrame.eventType, _direction);
+							skrollable.lastFrameIndex = -1;
+						}
+					}
+					else {
+						_updateClass(element, [SKROLLABLE_AFTER_CLASS], [SKROLLABLE_BEFORE_CLASS, SKROLLABLE_BETWEEN_CLASS]);
+
+						//This handles the special case where we exit the last keyframe.
+						if(emitEvents && lastFrameIndex < framesLength) {
+							_emitEvent(element, lastFrame.eventType, _direction);
+							skrollable.lastFrameIndex = framesLength;
+						}
+					}
+
+					//Remember that we handled the edge case (before/after the first/last keyframe).
+					skrollable.edge = beforeFirst ? -1 : 1;
+
+					switch(skrollable.edgeStrategy) {
+						case 'reset':
+							_reset(element);
+							continue;
+						case 'ease':
+							//Handle this case like it would be exactly at first/last keyframe and just pass it on.
+							frame = firstOrLastFrame.frame;
+							break;
+						default:
+						case 'set':
+							var props = firstOrLastFrame.props;
+
+							for(key in props) {
+								if(hasProp.call(props, key)) {
+									value = _interpolateString(props[key].value);
+
+									//Set style or attribute.
+									if(key.indexOf('@') === 0) {
+										element.setAttribute(key.substr(1), value);
+
+										if(afterLast && value.indexOf(SKROLLABLE_DONE_CLASS) > -1) {
+											skrollable.done = true;
+										}
+									}
+									else {
+										skrollr.setStyle(element, key, value);
+									}
+								}
+							}
+
+							continue;
 					}
 				}
 				else {
-					_updateClass(element, [SKROLLABLE_AFTER_CLASS], [SKROLLABLE_BEFORE_CLASS, SKROLLABLE_BETWEEN_CLASS]);
-
-					//This handles the special case where we exit the last keyframe.
-					if(emitEvents && lastFrameIndex < framesLength) {
-						_emitEvent(element, lastFrame.eventType, _direction);
-						skrollable.lastFrameIndex = framesLength;
+					//Did we handle an edge last time?
+					if(skrollable.edge !== 0) {
+						_updateClass(element, [SKROLLABLE_CLASS, SKROLLABLE_BETWEEN_CLASS], [SKROLLABLE_BEFORE_CLASS, SKROLLABLE_AFTER_CLASS]);
+						skrollable.edge = 0;
 					}
 				}
 
-				//Remember that we handled the edge case (before/after the first/last keyframe).
-				skrollable.edge = beforeFirst ? -1 : 1;
+				//Find out between which two key frames we are right now.
+				var keyFrameIndex = 0;
 
-				switch(skrollable.edgeStrategy) {
-					case 'reset':
-						_reset(element);
-						continue;
-					case 'ease':
-						//Handle this case like it would be exactly at first/last keyframe and just pass it on.
-						frame = firstOrLastFrame.frame;
-						break;
-					default:
-					case 'set':
-						var props = firstOrLastFrame.props;
+				for(; keyFrameIndex < framesLength - 1; keyFrameIndex++) {
+					if(frame >= frames[keyFrameIndex].frame && frame <= frames[keyFrameIndex + 1].frame) {
+						var left = frames[keyFrameIndex];
+						var right = frames[keyFrameIndex + 1];
 
-						for(key in props) {
-							if(hasProp.call(props, key)) {
-								value = _interpolateString(props[key].value);
+						for(key in left.props) {
+							if(hasProp.call(left.props, key)) {
+								var progress = (frame - left.frame) / (right.frame - left.frame);
+
+								//Transform the current progress using the given easing function.
+								progress = left.props[key].easing(progress);
+
+								//Interpolate between the two values
+								value = _calcInterpolation(left.props[key].value, right.props[key].value, progress);
+
+								value = _interpolateString(value);
 
 								//Set style or attribute.
 								if(key.indexOf('@') === 0) {
 									element.setAttribute(key.substr(1), value);
-
-									if(afterLast && value.indexOf(SKROLLABLE_DONE_CLASS) > -1) {
-										doneSkrollables.push(skrollableIndex);
-									}
 								}
 								else {
 									skrollr.setStyle(element, key, value);
@@ -860,75 +905,26 @@
 							}
 						}
 
-						continue;
-				}
-			}
-			else {
-				//Did we handle an edge last time?
-				if(skrollable.edge !== 0) {
-					_updateClass(element, [SKROLLABLE_CLASS, SKROLLABLE_BETWEEN_CLASS], [SKROLLABLE_BEFORE_CLASS, SKROLLABLE_AFTER_CLASS]);
-					skrollable.edge = 0;
-				}
-			}
+						//Are events enabled on this element?
+						//This code handles the usual cases of scrolling through different keyframes.
+						//The special cases of before first and after last keyframe are handled above.
+						if(emitEvents) {
+							//Did we pass a new keyframe?
+							if(lastFrameIndex !== keyFrameIndex) {
+								if(_direction === 'down') {
+									_emitEvent(element, left.eventType, _direction);
+								}
+								else {
+									_emitEvent(element, right.eventType, _direction);
+								}
 
-			//Find out between which two key frames we are right now.
-			var keyFrameIndex = 0;
-
-			for(; keyFrameIndex < framesLength - 1; keyFrameIndex++) {
-				if(frame >= frames[keyFrameIndex].frame && frame <= frames[keyFrameIndex + 1].frame) {
-					var left = frames[keyFrameIndex];
-					var right = frames[keyFrameIndex + 1];
-
-					for(key in left.props) {
-						if(hasProp.call(left.props, key)) {
-							var progress = (frame - left.frame) / (right.frame - left.frame);
-
-							//Transform the current progress using the given easing function.
-							progress = left.props[key].easing(progress);
-
-							//Interpolate between the two values
-							value = _calcInterpolation(left.props[key].value, right.props[key].value, progress);
-
-							value = _interpolateString(value);
-
-							//Set style or attribute.
-							if(key.indexOf('@') === 0) {
-								element.setAttribute(key.substr(1), value);
-							}
-							else {
-								skrollr.setStyle(element, key, value);
+								skrollable.lastFrameIndex = keyFrameIndex;
 							}
 						}
+
+						break;
 					}
-
-					//Are events enabled on this element?
-					//This code handles the usual cases of scrolling through different keyframes.
-					//The special cases of before first and after last keyframe are handled above.
-					if(emitEvents) {
-						//Did we pass a new keyframe?
-						if(lastFrameIndex !== keyFrameIndex) {
-							if(_direction === 'down') {
-								_emitEvent(element, left.eventType, _direction);
-							}
-							else {
-								_emitEvent(element, right.eventType, _direction);
-							}
-
-							skrollable.lastFrameIndex = keyFrameIndex;
-						}
-					}
-
-					break;
 				}
-			}
-		}
-
-		if(doneSkrollables.length > 0) {
-
-			for(var i = 0; i < doneSkrollables.length; i++) {
-				var doneIndex = doneSkrollables[i];
-				var skrollable = _skrollables[doneIndex].element;
-				_skrollables.splice(doneIndex, 1);
 			}
 		}
 	};
