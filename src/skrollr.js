@@ -21,7 +21,7 @@
 		init:    function(options) {
 			return _instance || new Skrollr(options);
 		},
-		VERSION: '1.1.2'
+		VERSION: '1.1.5'
 	};
 
 	//Minify optimization.
@@ -37,7 +37,7 @@
 	var SKROLLABLE_BEFORE_CLASS = SKROLLABLE_CLASS + '-before';
 	var SKROLLABLE_BETWEEN_CLASS = SKROLLABLE_CLASS + '-between';
 	var SKROLLABLE_AFTER_CLASS = SKROLLABLE_CLASS + '-after';
-	var SKROLLABLE_DONE_CLASS = 'done';
+	var SKROLLABLE_ONCE_CLASS = SKROLLABLE_CLASS + '-once';
 
 	var SKROLLR_CLASS = 'skrollr';
 	var SKROLLR_BODY_CLASS = SKROLLR_CLASS + '-body';
@@ -848,21 +848,17 @@
 
 							for(key in props) {
 								if(hasProp.call(props, key)) {
-									var elementClass = '';
-
 									value = _interpolateString(props[key].value);
 
 									//Set style or attribute.
 									if(key.indexOf('@') === 0) {
 										element.setAttribute(key.substr(1), value);
-										elementClass = value;
 									}
 									else {
 										skrollr.setStyle(element, key, value);
-										elementClass = _getClass(element);
 									}
 
-									if(afterLast && elementClass.indexOf(SKROLLABLE_DONE_CLASS) > -1) {
+									if(afterLast && skrollable.classAttr.indexOf(SKROLLABLE_ONCE_CLASS) > -1) {
 										skrollable.done = true;
 									}
 								}
