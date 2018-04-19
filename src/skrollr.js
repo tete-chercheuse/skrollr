@@ -21,7 +21,7 @@
 		init:    function(options) {
 			return _instance || new Skrollr(options);
 		},
-		VERSION: '1.1.1'
+		VERSION: '1.1.2'
 	};
 
 	//Minify optimization.
@@ -292,13 +292,7 @@
 				section:  documentBody,
 				ease:     _smoothScrollingDuration,
 				preload:  false,
-				callback: function(currentTop) {
-
-					if(_lastPosition === currentTop) { // Avoid overcalculations
-						return false;
-					}
-
-					_lastPosition = currentTop;
+				callback: function() {
 					_render();
 				}
 			});
@@ -315,15 +309,7 @@
 			(function skrollrLoop() {
 
 				_animFrame = requestAnimFrame(skrollrLoop);
-
-				var currentTop = _instance.getScrollTop();
-
-				if(_lastPosition === currentTop) { // Avoid overcalculations
-					return false;
-				}
-
 				_render();
-				_lastPosition = currentTop;
 
 			}());
 		}
@@ -673,7 +659,6 @@
 		_constants = undefined;
 		_direction = 'down';
 		_lastTop = -1;
-		_lastPosition = -1;
 		_lastViewportWidth = 0;
 		_lastViewportHeight = 0;
 		_requestReflow = false;
@@ -1560,7 +1545,6 @@
 
 	//The last top offset value. Needed to determine direction.
 	var _lastTop = -1;
-	var _lastPosition = -1;
 
 	//The last time we called the render method (doesn't mean we rendered!).
 	var _lastRenderCall = _now();
