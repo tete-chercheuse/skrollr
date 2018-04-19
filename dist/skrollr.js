@@ -2327,17 +2327,21 @@ module.exports = (function getSupport() {
 
 							for (key in props) {
 								if (hasProp.call(props, key)) {
+									var elementClass = '';
+
 									value = _interpolateString(props[key].value);
 
 									//Set style or attribute.
 									if (key.indexOf('@') === 0) {
 										element.setAttribute(key.substr(1), value);
-
-										if (afterLast && value.indexOf(SKROLLABLE_DONE_CLASS) > -1) {
-											skrollable.done = true;
-										}
+										elementClass = value;
 									} else {
 										skrollr.setStyle(element, key, value);
+										elementClass = _getClass(element);
+									}
+
+									if (afterLast && elementClass.indexOf(SKROLLABLE_DONE_CLASS) > -1) {
+										skrollable.done = true;
 									}
 								}
 							}
